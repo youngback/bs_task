@@ -1,0 +1,46 @@
+{
+  "animals": [
+    "고슴도치",
+    "땃쥐",
+    "날다람쥐",
+    "스컹크",
+    "스라소니",
+    "여우",
+    "흑곰"
+  ],
+
+  "food_edges": [
+    ["고슴도치", "스라소니"],
+    ["땃쥐", "스라소니"],
+
+    ["날다람쥐", "여우"],
+    ["스컹크", "흑곰"],
+
+    ["스라소니", "흑곰"],
+    ["여우", "흑곰"]
+  ],
+
+  "gene_edges" : [
+
+   
+    ["Ancestor_A1", "고슴도치"],
+    ["Ancestor_A1", "땃쥐"],
+
+   
+    ["Ancestor_M1", "날다람쥐"],
+    ["Ancestor_M1", "스컹크"],
+
+   
+    ["Ancestor_L1", "스라소니"],
+    ["Ancestor_L1", "여우"],
+    ["Ancestor_L1", "흑곰"],
+
+    
+    ["Ancestor_X", "Ancestor_A1"],
+    ["Ancestor_X", "Ancestor_M1"],
+
+   
+    ["S", "Ancestor_X"],
+    ["S", "Ancestor_L1"]
+    ]
+}
