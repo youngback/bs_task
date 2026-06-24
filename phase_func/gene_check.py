@@ -7,6 +7,7 @@ from utils.labjack_trigger import send_trigger, reset_trigger,  TRIG_G_CHECK_STA
 from config import WAITING,HEIGHT,WIDTH, HANDLE,FRAME_EXAMPLE_gcs,FRAME_EXAMPLE_gcf
 from draw_func.draw_marker import draw_white_marker
 from phase_func.waiting import random_isi_phase
+from sys_func.frame_count import frame_timer
 
 from set_opts.visual_opts import UI_CONFIG
 
@@ -14,7 +15,7 @@ from set_opts.visual_opts import UI_CONFIG
 # =========================
 # gene group trial 생성
 # =========================
-def generate_gene_trials(animals, gene_edges, n_trials=10):
+def generate_gene_trials(animals, gene_edges, n_trials=7):
 
     # 동물 -> 그룹 매핑
     animal_to_group = {}
@@ -59,6 +60,7 @@ def run_gene_trial(
     cfg_arrow = UI_CONFIG["arrow"]
     cfg_time = UI_CONFIG["timing"]
     cfg_feedback = UI_CONFIG["feedback_text"]
+    cfg = UI_CONFIG
 
     question = (
         f"{Josa.get_full_string(animal_a, '은')}"
@@ -88,20 +90,16 @@ def run_gene_trial(
         win,
         image=animal_a_image_path,
 
-        # 질문 왼쪽 위
-        pos=(-650, 300),
-
-        size=(120, 120)
+        pos=cfg["image"]["sub_left_pos"],
+        size=cfg["image"]["size2"]
     )
 
     animal_b_image = visual.ImageStim(
         win,
         image=animal_b_image_path,
 
-        # 질문 왼쪽 위
-        pos=(650, 300),
-
-        size=(120, 120)
+        pos=cfg["image"]["sub_right_pos"],
+        size=cfg["image"]["size2"]
 
     )
 
@@ -206,7 +204,8 @@ def run_gene_trial(
             )
 
         # ===== flip =====
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
         # ===== key check =====
         keys = event.getKeys(
@@ -276,7 +275,8 @@ def run_gene_trial(
                 handle
             )
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
         frame_count += 1
 
@@ -345,7 +345,8 @@ def run_gene_trial(
 
         feedback_text.draw()
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
         frame_count += 1
 
@@ -368,7 +369,7 @@ def run_gene_task(win, json_path, handle):
     trials = generate_gene_trials(
         animals,
         gene_edges,
-        n_trials=10
+        n_trials=7
     )
 
     results = []
@@ -384,10 +385,12 @@ def run_gene_task(win, json_path, handle):
     )
 
     win.color = [0.5, 0.5, 0.5]
-    win.flip()
+    flip_time = win.flip()
+    frame_timer(flip_time)
 
     instruction.draw()
-    win.flip()
+    flip_time = win.flip()
+    frame_timer(flip_time)
 
     core.wait(3)
 

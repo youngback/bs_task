@@ -1,5 +1,6 @@
 import random
 from psychopy import core, event
+from sys_func.frame_count import frame_timer
 
 def random_isi_phase(win, min_time=0.75, max_time=1.0):
     """
@@ -9,7 +10,8 @@ def random_isi_phase(win, min_time=0.75, max_time=1.0):
     wait_time = random.uniform(min_time, max_time)
     
     # 2. 화면을 비우고 flip
-    win.flip()
+    flip_time = win.flip()
+    frame_timer(flip_time)
     
     # 3. 계산된 랜덤 시간만큼 대기
     core.wait(wait_time)

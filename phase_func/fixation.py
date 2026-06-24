@@ -2,6 +2,7 @@
 import json
 import os
 from psychopy import visual, core, event
+from sys_func.frame_count import frame_timer
 
 def attention_check(win):
 
@@ -14,7 +15,8 @@ def attention_check(win):
 
     while True:
         text.draw()
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
         keys = event.getKeys()
 

@@ -5,6 +5,7 @@ from set_opts.visual_opts import UI_CONFIG
 from utils.labjack_trigger import send_trigger, reset_trigger, TRIG_FOOD_SHOW, TRIG_GENE_SHOW, TRIG_FOOD_SHOW_R, TRIG_GENE_SHOW_R, TRIG_HABITAT_SHOW, TRIG_HABITAT_SHOW_R
 from config import FRAME_EXAMPLE_fa,FRAME_EXAMPLE_ga,FRAME_EXAMPLE_fr,FRAME_EXAMPLE_gr,FRAME_EXAMPLE_ha, FRAME_EXAMPLE_hr, WIDTH, HEIGHT
 from draw_func.draw_marker import draw_white_marker
+from sys_func.frame_count import frame_timer
 
 
 # =========================================
@@ -52,6 +53,12 @@ def show_all_food_phase(
     # 배경색 변경 (분홍색)
     win.color = [1, 0.75, 0.85]  # rgb 기준 pink 느낌
 
+     # 이전 Enter 제거
+    event.clearEvents(eventType='keyboard')
+
+    # 배경 먼저 출력
+    win.flip()
+
     frame_count=0
 
     # ===== frame loop =====
@@ -86,7 +93,8 @@ def show_all_food_phase(
 
         frame_count+=1
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
 
 
@@ -96,7 +104,7 @@ def show_all_food_phase(
         if "return" in keys:
             break
 
-        frame_count += 1
+        
 
     # 원래 배경색 복구
     win.color = original_color
@@ -162,7 +170,8 @@ def show_all_gene_phase(
 
         frame_count+=1
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
 
 
@@ -172,7 +181,7 @@ def show_all_gene_phase(
         if "return" in keys:
             break
 
-        frame_count += 1
+        
 
     # 원래 배경색 복구
     win.color = original_color
@@ -186,7 +195,7 @@ def show_all_habitat_phase(
     handle
 ):
 
-    cfg = UI_CONFIG["image_phase"]["gene_all"]
+    cfg = UI_CONFIG["image_phase"]["habitat_all"]
 
     image_paths = (
     os.path.join("stimuli", "habitat", "서식지.png")
@@ -202,8 +211,8 @@ def show_all_habitat_phase(
     # 현재 배경색 저장
     original_color = win.color
 
-    # 배경색 변경 (분홍색)
-    win.color = [0.9, 1, 75]  # rgb 기준 pink 느낌
+    # 배경색 변경 
+    win.color = [0.7, 1, 0.7]  
 
     frame_count=0
 
@@ -239,7 +248,8 @@ def show_all_habitat_phase(
 
         frame_count+=1
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
 
 
@@ -249,7 +259,7 @@ def show_all_habitat_phase(
         if "return" in keys:
             break
 
-        frame_count += 1
+        
 
     # 원래 배경색 복구
     win.color = original_color
@@ -332,7 +342,8 @@ def show_random_food_pair(
 
         frame_count += 1
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
     win.color = original_color
 
@@ -404,7 +415,8 @@ def show_random_gene_single(
 
         frame_count+=1
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
 
     win.color = original_color
@@ -474,8 +486,9 @@ def show_random_habitat_single(
         stim.draw()
 
         frame_count+=1
-
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
+                
 
 
     win.color = original_color

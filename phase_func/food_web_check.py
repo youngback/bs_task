@@ -7,7 +7,7 @@ from utils.labjack_trigger import send_trigger, reset_trigger,  TRIG_F_CHECK_STA
 from config import WAITING,HEIGHT,WIDTH, HANDLE,FRAME_EXAMPLE_fcs,FRAME_EXAMPLE_fcf
 from draw_func.draw_marker import draw_white_marker
 from phase_func.waiting import random_isi_phase
-
+from sys_func.frame_count import frame_timer
 from set_opts.visual_opts import UI_CONFIG
 
 
@@ -28,7 +28,7 @@ def load_food_web(json_path):
 # =========================
 # 2. trial 생성
 # =========================
-def generate_trials(animals, food_web, n_trials=10):
+def generate_trials(animals, food_web, n_trials=7):
     trials = []
 
     for _ in range(n_trials):
@@ -61,6 +61,7 @@ def run_trial(
     cfg_arrow = UI_CONFIG["arrow"]
     cfg_time = UI_CONFIG["timing"]
     cfg_feedback = UI_CONFIG["feedback_text"]
+    cfg = UI_CONFIG
 
     question = (
         f"{Josa.get_full_string(predator, '은')}"
@@ -87,20 +88,16 @@ def run_trial(
         win,
         image=predator_image_path,
 
-        # 질문 왼쪽 위
-        pos=(-600, 300),
-
-        size=(180, 180)
+        pos=cfg["image"]["sub_left_pos"],
+        size=cfg["image"]["size2"]
     )
 
     prey_image = visual.ImageStim(
         win,
         image=prey_image_path,
 
-        # 질문 오른쪽 위
-        pos=(600, 300),
-
-        size=(180, 180)
+        pos=cfg["image"]["sub_right_pos"],
+        size=cfg["image"]["size2"]
     )
 
     # =====================================
@@ -208,7 +205,8 @@ def run_trial(
             )
 
         # ===== flip =====
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
         # ===== key check =====
         keys = event.getKeys(
@@ -279,7 +277,8 @@ def run_trial(
                 handle
             )
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
         frame_count += 1
 
@@ -347,8 +346,9 @@ def run_trial(
         prey_image.draw()
 
         feedback_text.draw()
-
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
+        
 
         frame_count += 1
 
@@ -368,7 +368,7 @@ def run_foodweb_task(win, json_path, handle):
     trials = generate_trials(
         animals,
         food_web,
-        n_trials=10
+        n_trials=7
     )
 
     results = []
@@ -384,10 +384,12 @@ def run_foodweb_task(win, json_path, handle):
     )
 
     win.color = [0.5, 0.5, 0.5]
-    win.flip()
+    flip_time = win.flip()
+    frame_timer(flip_time)
 
     instruction.draw()
-    win.flip()
+    flip_time = win.flip()
+    frame_timer(flip_time)
 
     core.wait(3)
 
@@ -410,13 +412,17 @@ def run_foodweb_task(win, json_path, handle):
         )
 
         results.append({
-            "prey": t["prey"],
-            "predator": t["predator"],
+            "animal_a": t["prey"],
+            "animal_b": t["predator"],
             "correct_answer": t["correct"],
             "response": response,
             "rt": rt,
             "is_correct": is_correct
         })
+
+        
+
+        
 
         core.wait(cfg_time["iti"])
 

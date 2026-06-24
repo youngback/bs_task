@@ -5,6 +5,9 @@ from openpyxl import Workbook
 from openpyxl import Workbook
 import os
 
+from openpyxl import Workbook
+import os
+
 def save_results_to_excel(results, save_dir="data", filename="results.xlsx"):
 
     os.makedirs(save_dir, exist_ok=True)
@@ -15,18 +18,20 @@ def save_results_to_excel(results, save_dir="data", filename="results.xlsx"):
     ws.title = "results"
 
     # =========================
-    # 헤더
+    # 헤더 (새로운 자료구조에 맞게 변경)
     # =========================
     headers = [
+        "trial_id",       # JSON에 적어둔 문제 번호
+        "domain",         # 화면 출력용 대분류 (food, gene, habitat)
+        "task_type",      # 세부 유형 (Food, Tree, Conflict, Habitat, Tree-conflict 등)
+        
         "premise",
         "option1",
         "option2",
-        "task_type",
-
-        "dist1",
-        "dist2",
-        "dir1",
-        "dir2",
+        
+        "rationale",      # 정답의 근거 (거리 비교 텍스트)
+        "checkpoint1",    # Food 태스크용 포인트
+        "checkpoint2",    # Food 태스크용 포인트
 
         "correct_answer",
         "response",
@@ -38,28 +43,32 @@ def save_results_to_excel(results, save_dir="data", filename="results.xlsx"):
     # =========================
     # 데이터
     # =========================
+    idx = 0
     for r in results:
+        idx+=1
         ws.append([
-            r.get("premise"),
-            r.get("option1"),
-            r.get("option2"),
-            r.get("task_type"),
+            idx,
+            r.get("trial_id", ""),
+            r.get("domain", ""),
+            r.get("task_type", ""),
+            
+            r.get("premise", ""),
+            r.get("option1", ""),
+            r.get("option2", ""),
+            
+            r.get("rationale", ""),    # 값이 없는 태스크는 빈칸으로 들어갑니다
+            r.get("checkpoint1", ""),  # 값이 없는 태스크는 빈칸으로 들어갑니다
+            r.get("checkpoint2", ""),  # 값이 없는 태스크는 빈칸으로 들어갑니다
 
-            r.get("dist1"),
-            r.get("dist2"),
-            r.get("dir1"),
-            r.get("dir2"),
-
-            r.get("correct"),   # 이름 맞춤
-            r.get("response"),
-            r.get("rt"),
-            r.get("is_correct")
+            r.get("correct", ""),      # JSON의 correct 키 매핑
+            r.get("response", ""),
+            r.get("rt", ""),
+            r.get("is_correct", "")
         ])
 
     wb.save(file_path)
 
     return file_path
-
 
 def save_results_to_excel_A(results, save_dir="data", filename="results.xlsx"):
 
@@ -81,8 +90,8 @@ def save_results_to_excel_A(results, save_dir="data", filename="results.xlsx"):
     # =========================
     headers = [
         "trial_index",
-        "prey",
-        "predator",
+        "animal_a",
+        "animal_b",
         "correct_answer",   # 1 (O) / 0 (X)
         "response",         # 1 / 0 / None
         "rt",
@@ -97,8 +106,8 @@ def save_results_to_excel_A(results, save_dir="data", filename="results.xlsx"):
 
         ws.append([
             i,
-            r.get("prey"),
-            r.get("predator"),
+            r.get("animal_a"),
+            r.get("animal_b"),
             r.get("correct_answer"),
             r.get("response"),
             r.get("rt"),

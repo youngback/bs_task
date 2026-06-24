@@ -3,7 +3,7 @@
 UI_CONFIG = {
     # ===== 텍스트 =====
     "question": {
-        "pos": (0, 300),
+        "pos": (0, 250),
         "height": 60,
         "wrapWidth": 1200,
         "color": "black",
@@ -22,9 +22,13 @@ UI_CONFIG = {
     "image": {
         "left_pos": (-400, -120),
         "right_pos": (400, -120),
+        "main_pos": (0, 450),
+        "sub_left_pos": (-650, 300),
+        "sub_right_pos": (650, 300),
 
         # 정사각형
-        "size": (180, 180)
+        "size": (180, 180),
+        "size2": (120, 120)
     },
 
     "feedback_text": {
@@ -77,6 +81,14 @@ UI_CONFIG = {
 
             "size": (1600, 800)
         },
+
+        "habitat_all": {
+
+            "position": (0, 0),
+
+            "size": (1500, 800)
+        },
+
 
         # =====================================
         # food 랜덤 2개

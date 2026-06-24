@@ -6,346 +6,17 @@ from set_opts.visual_opts import UI_CONFIG
 from config import WAITING,HEIGHT,WIDTH, HANDLE,FRAME_EXAMPLE_bs,FRAME_EXAMPLE_bf,waiting_frames
 from draw_func.draw_marker import draw_white_marker
 from utils.labjack_trigger import send_trigger, reset_trigger, TRIG_B_START, TRIG_B_RESPOND
-from phase_func.show_info import show_random_food_pair, show_random_gene_single
+from phase_func.show_info import show_all_food_phase, show_all_gene_phase, show_all_habitat_phase
 from phase_func.waiting import random_isi_phase
 from psychopy import visual, core, event
 from psychopy.visual import TextBox2
 from pyjosa.josa import Josa
 from stimuli.category import DISEASE_POOL
+from sys_func.collect_option import load_both_web, build_candidate_table,  build_graph, split_by_distance, pick_option
+from sys_func.make_trial import generate_trials
+from sys_func.frame_count import frame_timer
 
 
-
-# =========================S
-# 1. JSON 로드
-# =========================
-def load_both_web(json_path):
-    with open(json_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    animals = data["animals"]
-    food_edges = [tuple(e) for e in data["food_edges"]]
-    gene_edges = [tuple(e) for e in data["gene_edges"]]
-
-    return animals, food_edges, gene_edges
-
-
-# =========================
-# 2. 그래프 생성
-# =========================
-def build_graph(edges, bidirectional=False):
-    graph = {}
-
-    for a, b in edges:
-        graph.setdefault(a, []).append(b)
-        if bidirectional:
-            graph.setdefault(b, []).append(a)
-
-    return graph
-
-
-# =========================
-# 3. 거리 계산
-# =========================
-def compute_all_distances(start, graph):
-    queue = deque([(start, 0)])
-    visited = {}
-
-    while queue:
-        node, dist = queue.popleft()
-
-        if node in visited:
-            continue
-
-        visited[node] = dist
-
-        for neighbor in graph.get(node, []):
-            queue.append((neighbor, dist + 1))
-
-    return visited
-
-
-def split_by_distance(dist_dict, animals):
-    groups = {}
-
-    for a in animals:
-        d = dist_dict.get(a, float("inf"))
-        groups.setdefault(d, []).append(a)
-
-    return groups
-
-def compute_distance(start, target, graph):
-    """
-    graph: dict 형태 {node: [neighbors]}
-    start → target까지 최단 거리 (hop 수)
-    """
-
-    queue = deque([(start, 0)])
-    visited = set()
-
-    while queue:
-        node, dist = queue.popleft()
-
-        if node == target:
-            return dist
-
-        if node in visited:
-            continue
-        visited.add(node)
-
-        for neighbor in graph.get(node, []):
-            queue.append((neighbor, dist + 1))
-
-    return float("inf")  # 연결 안됨
-
-def build_candidate_table(premise, animals, graph, task_type):
-
-    table = []
-
-    for a in animals:
-        if a == premise:
-            continue
-
-        d_forward = compute_distance(premise, a, graph)
-
-        if task_type == "food":
-            d_backward = compute_distance(a, premise, graph)
-
-            if d_forward < float("inf"):
-                direction = "forward"
-                dist = d_forward
-            elif d_backward < float("inf"):
-                direction = "backward"
-                dist = d_backward
-            else:
-                direction = "none"
-                dist = float("inf")
-        else:
-            # gene은 방향 없음
-            direction = "undirected"
-            dist = d_forward
-
-        table.append({
-            "animal": a,
-            "dist": dist,
-            "direction": direction
-        })
-
-    return table
-
-def pick_option(candidates, dist=None, direction=None):
-
-    filtered = candidates
-
-    if dist is not None:
-        filtered = [c for c in filtered if c["dist"] == dist]
-
-    if direction is not None:
-        filtered = [c for c in filtered if c["direction"] == direction]
-
-    if not filtered:
-        return None
-
-    return random.choice(filtered)
-
-
-# =========================
-# 4. Trial 생성
-# =========================
-def generate_trials(
-    animals,
-    food_edges,
-    gene_edges,
-    n_trials=60
-):
-
-    trials = []
-
-    # =========================
-    # graph 생성
-    # =========================
-    food_graph = build_graph(
-        food_edges,
-        bidirectional=False
-    )
-
-    gene_graph = build_graph(
-        gene_edges,
-        bidirectional=True
-    )
-
-    # =========================
-    # 거리 pool
-    # =========================
-    food_distances = [1, 2, 3, float("inf")]
-
-    gene_distances = [2, 4, 5]
-
-    # =========================
-    # 10 trial block 단위 생성
-    # =========================
-    block_size = 10
-
-    n_blocks = n_trials // block_size
-
-    task_sequence = []
-
-    for _ in range(n_blocks):
-
-        block = (
-            ["food"] * 5 +
-            ["gene"] * 5
-        )
-
-        random.shuffle(block)
-
-        task_sequence.extend(block)
-
-    # 남는 trial 처리
-    remain = n_trials % block_size
-
-    if remain > 0:
-
-        remain_block = (
-            ["food"] * int(remain * 0.5) +
-            ["gene"] * (remain - int(remain * 0.5))
-        )
-
-        random.shuffle(remain_block)
-
-        task_sequence.extend(remain_block)
-
-    # =========================
-    # trial 생성
-    # =========================
-    for task_type in task_sequence:
-
-        while True:
-
-            premise = random.choice(animals)
-
-            # =========================
-            # graph 선택
-            # =========================
-            if task_type == "food":
-
-                graph = food_graph
-                possible_distances = food_distances
-
-            else:
-
-                graph = gene_graph
-                possible_distances = gene_distances
-
-            # =========================
-            # candidate table
-            # =========================
-            table = build_candidate_table(
-                premise,
-                animals,
-                graph,
-                task_type
-            )
-
-            # =========================
-            # 옵션1 선택
-            # =========================
-            dist1 = random.choice(
-                possible_distances
-            )
-
-            if task_type == "food":
-
-                dir1 = random.choice([
-                    "forward",
-                    "backward",
-                    "none"
-                ])
-
-            else:
-
-                dir1 = None
-
-            opt1 = pick_option(
-                table,
-                dist=dist1,
-                direction=dir1
-            )
-
-            if opt1 is None:
-                continue
-
-            # =========================
-            # 옵션2 선택
-            # =========================
-            dist2 = random.choice(
-                possible_distances
-            )
-
-            if task_type == "food":
-
-                dir2 = random.choice([
-                    "forward",
-                    "backward",
-                    "none"
-                ])
-
-            else:
-
-                dir2 = None
-
-            opt2 = pick_option(
-                table,
-                dist=dist2,
-                direction=dir2
-            )
-
-            if opt2 is None:
-                continue
-
-            if opt1["animal"] == opt2["animal"]:
-                continue
-
-            # =========================
-            # 같은 거리 제거
-            # =========================
-            if opt1["dist"] == opt2["dist"]:
-                continue
-
-            # =========================
-            # 정답 계산
-            # =========================
-            if opt1["dist"] < opt2["dist"]:
-
-                correct = "left"
-
-            else:
-
-                correct = "right"
-
-            # =========================
-            # 저장
-            # =========================
-            trials.append({
-
-                "task_type": task_type,
-
-                "premise": premise,
-
-                "option1": opt1["animal"],
-                "option2": opt2["animal"],
-
-                "dist1": opt1["dist"],
-                "dist2": opt2["dist"],
-
-                "dir1": opt1["direction"],
-                "dir2": opt2["direction"],
-
-                "correct": correct
-            })
-
-            break
-
-    return trials
 
 
 # =========================
@@ -371,10 +42,30 @@ def run_trial(win, trial, handle):
     # =========================
     # 질문 (추후 종류 세분화하기)
     # =========================
-    if trial["task_type"] == "food":
-        target = random.choice(DISEASE_POOL["food"])
+    if trial["domain"] == "food":
+
+        target = random.choice(
+            DISEASE_POOL["food"]
+        )
+
+        target_color = [0.5, -1, -1]
+
+    elif trial["domain"] == "gene":
+
+        target = random.choice(
+            DISEASE_POOL["gene"]
+        )
+
+        target_color = [0.5, -1, -1]
+
     else:
-        target = random.choice(DISEASE_POOL["gene"])
+
+        target = random.choice(
+            DISEASE_POOL["habitat"]
+        )
+
+        # 초록 계열 추천
+        target_color = [0.5, -1, -1]
 
     #===== target + 조사 분리 =====
     full_target = Josa.get_full_string(target, '을')
@@ -382,23 +73,34 @@ def run_trial(win, trial, handle):
     # 조사만 추출
     josa_part = full_target[len(target):]
 
-    # category별 색
-    target_color = (
-        [0.5, -1, -1]
-        if trial["task_type"] == "food"
-        else [-1, -1, 0.5]
-    )
+
 
     # ===== 질문 문장 =====
-    question_text = (
-        f"{Josa.get_full_string(trial['premise'], '가')} "
-        f"<c={target_color}>{target}</c>{josa_part}"
-        f" 가진다.\n"
-        f"어느 쪽이 더 그 "
-        f"<c={target_color}>{target}</c>{josa_part}"
-        f" 가질 가능성이 큰가?"
-    )
+    if trial["domain"] == "food":
 
+        question_text = (
+            f"{Josa.get_full_string(trial['premise'], '가')} "
+            f"<c={target_color}>{target}</c>{josa_part} 가지고 있다.\n"
+            f"이 <c={target_color}>{target}</c>{josa_part} "
+            f"{Josa.get_full_string(trial['premise'], '으로')}부터 옮은 동물은 누구일까?" 
+        )
+    elif trial["domain"] == "gene":
+
+        question_text = (
+            f"{Josa.get_full_string(trial['premise'], '가')} "
+            f"<c={target_color}>{target}</c>{josa_part} 가진다.\n"
+            f"어느 쪽이 그 "
+            f"<c={target_color}>{target}</c>{josa_part} 가졌을까?"
+        )
+
+    else:
+
+        question_text = (
+        f"{Josa.get_full_string(trial['premise'], '는')} "
+            f"<c={target_color}>{target}</c>때문에 피해를 입었다.\n"
+            f"어느 쪽이 같은 "
+            f"<c={target_color}>{target}</c>에 피해를 입었을까?"
+        )
     # ===== TextBox2 =====
     question = TextBox2(
         win,
@@ -430,11 +132,8 @@ def run_trial(win, trial, handle):
         win,
         image=premise_image_path,
 
-        # 원하는 위치
-        pos=(-650, 300),
-
-        # 원하는 크기
-        size=(120, 120)
+        pos=cfg["image"]["main_pos"],
+        size=cfg["image"]["size2"]
     )
 
     # =========================
@@ -546,10 +245,16 @@ def run_trial(win, trial, handle):
             )
 
         # ===== flip =====
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
+
+        if frame_count < waiting_frames:
+            event.clearEvents()
+
+        
 
         # ===== key check =====
-        if frame_count >= waiting_frames:
+        elif frame_count >= waiting_frames:
 
             keys = event.getKeys(
                 keyList=["left", "right", "escape"],
@@ -562,6 +267,7 @@ def run_trial(win, trial, handle):
 
                 if key == "escape":
                     core.quit()
+                    #return response, rtS
 
                 if key == "left":
 
@@ -621,7 +327,8 @@ def run_trial(win, trial, handle):
                 handle
             )
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
         frame_count += 1
 
@@ -657,7 +364,8 @@ def run_trial(win, trial, handle):
         left_arrow.draw()
         right_arrow.draw()
 
-        win.flip()
+        flip_time = win.flip()
+        frame_timer(flip_time)
 
         frame_count += 1
 
@@ -669,14 +377,52 @@ def run_trial(win, trial, handle):
 
     return response, rt
 
+
+# =========================
+# 6. 전체 실행
+# =========================
+def run_both_task(win, food_json_path, gene_json_path, habitat_json_path, handle):
+    
+    # 1. 3개의 JSON 파일 경로를 넣어 전체 180개의 트라이얼(15블록) 생성
+    trials = generate_trials(food_json_path, gene_json_path, habitat_json_path)
+
+    results = []
+
+    # 2. enumerate를 사용하여 인덱스(i)와 트라이얼(t)을 동시에 순회
+    for i, t in enumerate(trials):
+
+        random_isi_phase(win)
+
+        # 3. 정보 제공 화면 로직 수정 (처음 시작할 때[0]와 15문제마다 반복)
+        if i % 15 == 0:
+            show_all_food_phase(win, handle)
+            show_all_gene_phase(win, handle)
+            show_all_habitat_phase(win, handle)
+
+        # 4. 트라이얼 실행
+        response, rt = run_trial(win, t, handle)
+
+        # 5. 정답 확인 및 결과 저장
+        is_correct = (response == t["correct"]) if response else False
+
+        results.append({
+            **t,
+            "response": response,
+            "rt": rt,
+            "is_correct": is_correct
+        })
+
+    return results
+
+'''
 # =========================
 # 6. 전체 실행
 # =========================
 def run_both_task(win, json_path,handle):
 
-    animals, food_edges, gene_edges = load_both_web(json_path)
+    animals, food_edges, gene_edges, habitat_groups = load_both_web(json_path)
 
-    trials = generate_trials(animals, food_edges, gene_edges, n_trials=60)
+    trials = generate_trials(animals, food_edges, gene_edges, habitat_groups, n_trials=180)
 
     results = []
 
@@ -686,17 +432,13 @@ def run_both_task(win, json_path,handle):
 
         random_isi_phase(win)
 
-        if i == 5:
+       
 
-            show_random_food_pair(win,handle)
+        if i == 0 and i  % 10 == 0:
 
-            show_random_gene_single(win,handle)
-
-        elif i > 5 and (i - 5) % 15 == 0:
-
-            show_random_food_pair(win, handle)
-
-            show_random_gene_single(win, handle)
+            show_all_food_phase(win, handle)
+            show_all_gene_phase(win, handle)
+            show_all_habitat_phase(win, handle)
 
 
         response, rt = run_trial(win, t,handle)
@@ -718,3 +460,5 @@ def run_both_task(win, json_path,handle):
         
 
     return results
+
+'''
