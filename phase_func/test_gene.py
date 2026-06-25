@@ -215,7 +215,7 @@ def draw_white_marker_local(win, pos, size):
  
  
 # ── 단일 페이즈 실행 ──────────────────────────────────────────────────────────
-def run_gene_phase(win, kb, phase_def):
+def run_gene_phase(win, kb, phase_def,handle):
     slot_pos    = phase_def["slot_pos"]
     slot_valid  = phase_def["slot_valid"]
     slot_labels = phase_def.get("slot_labels", ["?"] * len(slot_pos))
@@ -374,9 +374,9 @@ def run_gene_phase(win, kb, phase_def):
         # ── 응답 대기 ─────────────────────────────────────────────────────────
         if phase_mode == "wait_response":
             if phase_frame_count == 0:
-                win.callOnFlip(send_trigger, HANDLE, TRIG_G_CHECK_START)
+                win.callOnFlip(send_trigger, handle, TRIG_G_CHECK_START)
             elif phase_frame_count == 1:
-                win.callOnFlip(reset_trigger, HANDLE)
+                win.callOnFlip(reset_trigger, handle)
  
             draw_scene(active_slot, selected_choice)
  
@@ -451,9 +451,9 @@ def run_gene_phase(win, kb, phase_def):
         # ── 피드백 ────────────────────────────────────────────────────────────
         elif phase_mode == "feedback":
             if phase_frame_count == 0:
-                win.callOnFlip(send_trigger, HANDLE, TRIG_G_CHECK_RESPOND)
+                win.callOnFlip(send_trigger, handle, TRIG_G_CHECK_RESPOND)
             elif phase_frame_count == 1:
-                win.callOnFlip(reset_trigger, HANDLE)
+                win.callOnFlip(reset_trigger, handle)
  
             draw_scene(pending_slot, selected_choice)
  
@@ -507,7 +507,7 @@ def run_gene_phase(win, kb, phase_def):
  
  
 # ── 메인 태스크 함수 ──────────────────────────────────────────────────────────
-def run_gene_task(win):
+def run_gene_task(win,handle):
     """
     유전자(계통수) 분류 태스크 실행.
     페이즈 순서는 매 실행마다 랜덤하게 섞입니다.
@@ -525,7 +525,7 @@ def run_gene_task(win):
         for _ in range(int(0.5 * FPS)):
             win.flip()
  
-        phase_results = run_gene_phase(win, kb, phase_def)
+        phase_results = run_gene_phase(win, kb, phase_def,handle)
         all_results.extend(phase_results)
  
     return all_results

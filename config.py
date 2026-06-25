@@ -17,7 +17,7 @@ FRAME_EXAMPLE_hcf = 15
 FRAME_EXAMPLE_bs = 16
 FRAME_EXAMPLE_bf = 17
 waiting_frames=420
-MODE=0
+MODE=1
 #0전부/1food빼고/2유전자빼고/3서식지빼고
 HANDLE=None
 FRAME_FIXATION=3

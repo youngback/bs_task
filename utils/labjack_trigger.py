@@ -44,6 +44,7 @@ TRIG_H_CHECK_RESPOND    = 15
 
 TRIG_B_START          = 20
 TRIG_B_RESPOND        = 21
+TRIG_B_WRONGRESPOND        = 22
 
 
 

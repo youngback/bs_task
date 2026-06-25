@@ -4,7 +4,7 @@ import random
 import os
 from sys_func.collect_option import load_both_web, build_candidate_table,  build_graph, split_by_distance, pick_option, generate_trials_from_set,load_trial_set
 from config import MODE
-def generate_trials(food_json_path, gene_json_path, habitat_json_path, n_trials=180):
+def generate_trials(food_json_path, gene_json_path, habitat_json_path, n_trials=120):
     """
     미리 구성해둔 JSON 파일에서 트라이얼을 불러와,
     종류에 상관없이 전체 문제를 하나로 합친 뒤 완전히 무작위로 섞어
@@ -33,15 +33,15 @@ def generate_trials(food_json_path, gene_json_path, habitat_json_path, n_trials=
     elif MODE==1:
         all_trials.extend(gene_trials)
         all_trials.extend(habitat_trials)
-        n_trials=120
+        n_trials=80
     elif MODE==2:
         all_trials.extend(food_trials)
         all_trials.extend(habitat_trials)
-        n_trials=120
+        n_trials=80
     elif MODE==3:
         all_trials.extend(gene_trials)
         all_trials.extend(food_trials)
-        n_trials=120
+        n_trials=80
     
     # 3. 전체 무작위로 섞기
     random.shuffle(all_trials)

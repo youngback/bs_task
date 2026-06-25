@@ -5,7 +5,7 @@ from collections import deque
 from set_opts.visual_opts import UI_CONFIG
 from config import WAITING,HEIGHT,WIDTH, HANDLE,FRAME_EXAMPLE_bs,FRAME_EXAMPLE_bf,waiting_frames
 from draw_func.draw_marker import draw_white_marker
-from utils.labjack_trigger import send_trigger, reset_trigger, TRIG_B_START, TRIG_B_RESPOND
+from utils.labjack_trigger import send_trigger, reset_trigger, TRIG_B_START, TRIG_B_RESPOND,TRIG_B_WRONGRESPOND
 from phase_func.show_info import show_all_food_phase, show_all_gene_phase, show_all_habitat_phase
 from phase_func.waiting import random_isi_phase
 from psychopy import visual, core, event
@@ -267,7 +267,7 @@ def run_trial(win, trial, handle):
 
                 if key == "escape":
                     core.quit()
-                    #return response, rtS
+                    #return response, rt
 
                 if key == "left":
 
@@ -311,12 +311,22 @@ def run_trial(win, trial, handle):
         right_arrow.draw()
 
         # ON
-        if frame_count == 0:
+
+        
+        if frame_count == 0 and trial['correct']==response:
 
             win.callOnFlip(
                 send_trigger,
                 handle,
                 TRIG_B_RESPOND
+            )
+
+        elif frame_count == 0 and trial['correct']!=response:
+
+            win.callOnFlip(
+                send_trigger,
+                handle,
+                TRIG_B_WRONGRESPOND
             )
 
         # OFF
@@ -394,8 +404,8 @@ def run_both_task(win, food_json_path, gene_json_path, habitat_json_path, handle
         random_isi_phase(win)
 
         # 3. 정보 제공 화면 로직 수정 (처음 시작할 때[0]와 15문제마다 반복)
-        if i % 15 == 0:
-            show_all_food_phase(win, handle)
+        if i % 10 == 0:
+            #show_all_food_phase(win, handle)
             show_all_gene_phase(win, handle)
             show_all_habitat_phase(win, handle)
 

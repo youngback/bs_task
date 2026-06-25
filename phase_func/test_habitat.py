@@ -147,7 +147,7 @@ def draw_white_marker_local(win, pos, size):
  
  
 # ── 메인 함수 ─────────────────────────────────────────────────────────────────
-def run_habitat_task(win):
+def run_habitat_task(win, handle):
     kb = keyboard.Keyboard()
  
     with open(JSON_PATH, encoding="utf-8") as f:
@@ -299,9 +299,9 @@ def run_habitat_task(win):
         if phase == "wait_response":
  
             if phase_frame_count == 0:
-                win.callOnFlip(send_trigger, HANDLE, TRIG_H_CHECK_START)
+                win.callOnFlip(send_trigger, handle, TRIG_H_CHECK_START)
             elif phase_frame_count == 1:
-                win.callOnFlip(reset_trigger, HANDLE)
+                win.callOnFlip(reset_trigger, handle)
  
             draw_scene(cur_slot, cur_animal_idx, q_count)
  
@@ -379,9 +379,9 @@ def run_habitat_task(win):
         elif phase == "feedback":
  
             if phase_frame_count == 0:
-                win.callOnFlip(send_trigger, HANDLE, TRIG_H_CHECK_RESPOND)
+                win.callOnFlip(send_trigger, handle, TRIG_H_CHECK_RESPOND)
             elif phase_frame_count == 1:
-                win.callOnFlip(reset_trigger, HANDLE)
+                win.callOnFlip(reset_trigger, handle)
  
             draw_scene(cur_slot, cur_animal_idx, q_count)
  

@@ -56,64 +56,60 @@ def main():
         show_all_gene_phase(win, handle)
         show_all_habitat_phase(win, handle)
 
-        run_food_task(win)
+        run_food_task(win,handle)
 
         show_all_food_phase(win, handle)
         show_all_gene_phase(win, handle)
         show_all_habitat_phase(win, handle)
 
-        run_gene_task(win)
+        run_gene_task(win,handle)
 
 
         show_all_food_phase(win, handle)
         show_all_gene_phase(win, handle)
         show_all_habitat_phase(win, handle)
 
-        run_habitat_task(win)
-        run_habitat_task(win)
+        run_habitat_task(win,handle)
+        run_habitat_task(win,handle)
 
     elif MODE==1:
-        show_all_food_phase(win, handle)
+       
         show_all_gene_phase(win, handle)
         show_all_habitat_phase(win, handle)
 
-        run_gene_task(win)
+        run_gene_task(win,handle)
 
 
-        show_all_food_phase(win, handle)
+        
         show_all_gene_phase(win, handle)
         show_all_habitat_phase(win, handle)
 
-        run_habitat_task(win)
-        run_habitat_task(win)
+        run_habitat_task(win,handle)
+        run_habitat_task(win,handle)
 
     elif MODE==2:
         show_all_food_phase(win, handle)
-        show_all_gene_phase(win, handle)
         show_all_habitat_phase(win, handle)
 
-        run_food_task(win)
+        run_food_task(win,handle)
 
 
         show_all_food_phase(win, handle)
-        show_all_gene_phase(win, handle)
         show_all_habitat_phase(win, handle)
 
-        run_habitat_task(win)
-        run_habitat_task(win)
+        run_habitat_task(win,handle)
+        run_habitat_task(win,handle)
 
     elif MODE==3:
         show_all_food_phase(win, handle)
         show_all_gene_phase(win, handle)
-        show_all_habitat_phase(win, handle)
 
-        run_food_task(win)
+        run_food_task(win,handle)
 
         show_all_food_phase(win, handle)
         show_all_gene_phase(win, handle)
-        show_all_habitat_phase(win, handle)
 
-        run_gene_task(win)
+        run_gene_task(win,handle)
        
     '''
     show_all_food_phase(win, handle)

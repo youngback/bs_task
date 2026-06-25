@@ -244,7 +244,7 @@ def draw_white_marker_local(win, pos, size):
  
  
 # ── 단일 페이즈 실행 함수 ─────────────────────────────────────────────────────
-def run_phase(win, kb, phase_def, food_edges, all_animals):
+def run_phase(win, kb, phase_def, food_edges, all_animals,handle):
     """
     하나의 페이즈(먹이사슬 그룹)를 실행합니다.
     반환: 해당 페이즈의 결과 리스트
@@ -425,9 +425,9 @@ def run_phase(win, kb, phase_def, food_edges, all_animals):
  
             # 트라이얼 시작 트리거: 새 트라이얼 첫 프레임에만 발송
             if phase_frame_count == 0:
-                win.callOnFlip(send_trigger, HANDLE, TRIG_F_CHECK_START)
+                win.callOnFlip(send_trigger, handle, TRIG_F_CHECK_START)
             elif phase_frame_count == 1:
-                win.callOnFlip(reset_trigger, HANDLE)
+                win.callOnFlip(reset_trigger, handle)
  
             draw_scene(active_slot, selected_choice)
  
@@ -498,9 +498,9 @@ def run_phase(win, kb, phase_def, food_edges, all_animals):
         # ── 피드백 단계 ───────────────────────────────────────────────────────
         elif phase_mode == "feedback":
             if phase_frame_count == 0:
-                win.callOnFlip(send_trigger, HANDLE, TRIG_F_CHECK_RESPOND)
+                win.callOnFlip(send_trigger, handle, TRIG_F_CHECK_RESPOND)
             elif phase_frame_count == 1:
-                win.callOnFlip(reset_trigger, HANDLE)
+                win.callOnFlip(reset_trigger, handle)
  
             draw_scene(pending_slot, selected_choice)
  
@@ -555,7 +555,7 @@ def run_phase(win, kb, phase_def, food_edges, all_animals):
  
  
 # ── 메인 태스크 함수 ──────────────────────────────────────────────────────────
-def run_food_task(win):
+def run_food_task(win,handle):
     """
     동물 먹이사슬 태스크 실행 (3페이즈).
     win: 메인에서 이미 생성된 psychopy.visual.Window 객체
@@ -579,7 +579,7 @@ def run_food_task(win):
         for _ in range(int(0.5 * FPS)):
             win.flip()
  
-        phase_results = run_phase(win, kb, phase_def, food_edges, all_animals)
+        phase_results = run_phase(win, kb, phase_def, food_edges, all_animals,handle)
         all_results.extend(phase_results)
  
     return all_results
